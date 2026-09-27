@@ -10,8 +10,8 @@ import argparse
 import re
 import sys
 import tomllib
-from dataclasses import dataclass
 from collections.abc import Iterable
+from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlparse
