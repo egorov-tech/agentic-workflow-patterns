@@ -1,0 +1,21 @@
+# Default gate config for scripts/validate.py
+# Override path: VALIDATE_TOML=/path/to/validate.toml
+
+required_files = [
+  "index.html",
+  "meta.json",
+]
+
+[forbidden]
+# Case-insensitive substrings. Catch placeholder / internal leaks before publish.
+patterns = [
+  "lorem ipsum",
+  "TODO",
+  "FIXME",
+  "changeme",
+  "internal-only",
+]
+
+[images]
+# Soft size budget for demos / review pages (bytes).
+max_bytes = 2048

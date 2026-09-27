@@ -1,8 +1,10 @@
 # Agentic Workflow Patterns
 
+[![CI](https://github.com/egorov-tech/agentic-workflow-patterns/actions/workflows/ci.yml/badge.svg)](https://github.com/egorov-tech/agentic-workflow-patterns/actions/workflows/ci.yml)
+
 Как я строю production-процесс, где AI-агенты делают реальную работу, а качество держится правилами, а не надеждой.
 
-Паттерны вынесены из рабочего пайплайна (frontend / landing production). Сам пайплайн под NDA — здесь архитектура, роли и примеры конфигов без клиентских данных.
+Паттерны вынесены из рабочего пайплайна (frontend production). Сам пайплайн под NDA — здесь архитектура, роли, примеры конфигов и **рабочий** скрипт-гейт без клиентских данных.
 
 ---
 
@@ -22,7 +24,7 @@
 │                  main loop, каждый ход     (Opus, read-only)  │
 ├──────────────────────────────────────────────────────────────┤
 │  3. RULES        .mdc-правила по ролям + скрипты-гейты        │
-│                  validate → click-test → package              │
+│                  validate → (click-test) → (package)         │
 ├──────────────────────────────────────────────────────────────┤
 │  4. MEMORY       ошибка → правило; типизированная память      │
 │                  читается перед каждой задачей                │
@@ -56,19 +58,42 @@
 
 ### 3. Правила как код + гейты
 
-- правила разбиты по ролям (`core`, `dev`, `qa`, `front`, `cleanliness`) и подгружаются по контексту задачи
+- правила разбиты по ролям и подгружаются по контексту задачи
 - каждое критичное правило подкреплено скриптом, а не только текстом
-- порядок гейтов фиксирован: **validate → click-test → package**; упаковка без зелёных гейтов невозможна
+- порядок гейтов: **validate → click-test → package**; в этом репо реализован `validate`, остальные шаги — паттерн (код под NDA)
 
-Принцип, выведенный на практике: **repair > retry > gate**. Проверка только на финальном гейте превращает каждое нарушение в мёртвую задачу; чинить надо там, где ошибка рождается.
+Принцип: **repair > retry > gate**. Проверка только на финальном гейте превращает каждое нарушение в мёртвую задачу; чинить надо там, где ошибка рождается.
 
-→ [examples/qa-gate-rule.mdc](examples/qa-gate-rule.mdc)
+→ [examples/qa-gate-rule.mdc](examples/qa-gate-rule.mdc) · рабочий гейт: [`scripts/validate.py`](scripts/validate.py)
 
 ### 4. Память, которая учит систему
 
 Каждый разбор бага заканчивается одной строкой `ошибка → правило`. Память типизирована и индексирована, чтобы агент подтягивал только релевантное.
 
 → [examples/memory-system.md](examples/memory-system.md)
+
+---
+
+## Попробовать
+
+Нужен Python **3.11+** (stdlib). Зависимости для самого гейта не нужны.
+
+```bash
+python3 scripts/validate.py examples/pages/good    # exit 0
+python3 scripts/validate.py examples/pages/broken  # exit 1
+```
+
+Пример вывода на `broken`:
+
+```text
+index.html:1 · required-files · missing required file `meta.json`
+index.html:6 · broken-link · href="missing.css" does not resolve to an existing file
+index.html:11 · forbidden-string · forbidden string `TODO`
+index.html:12 · image-size · image `assets/hero.png` is 2100 bytes (limit 2048)
+index.html:13 · img-alt · <img src="assets/logo.png"> is missing alt
+```
+
+Правила и лимиты — в [`validate.toml`](validate.toml). Тесты: `pip install pytest && pytest -q`.
 
 ---
 
@@ -81,7 +106,7 @@
 
 ## Стек
 
-Claude Code (agents, skills, hooks, MCP) · Cursor (rules `.mdc`) · Python (валидаторы, click-тесты на Playwright, упаковка) · Asana / Slack через MCP
+Claude Code (agents, skills, hooks, MCP) · Cursor (rules `.mdc`) · Python (валидаторы; click-тесты и упаковка — в рабочем пайплайне под NDA)
 
 ---
 
