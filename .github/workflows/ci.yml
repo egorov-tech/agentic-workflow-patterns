@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tools
+        run: pip install ruff pytest
+
+      - name: Ruff
+        run: ruff check scripts tests
+
+      - name: Pytest
+        run: pytest -q
+
+      - name: Manual smoke (no pytest deps beyond stdlib for the gate itself)
+        run: |
+          python3 scripts/validate.py examples/pages/good
+          if python3 scripts/validate.py examples/pages/broken; then
+            echo "broken page unexpectedly passed" >&2
+            exit 1
+          fi

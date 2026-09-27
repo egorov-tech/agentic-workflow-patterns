@@ -1,0 +1,15 @@
+[project]
+name = "agentic-workflow-patterns"
+version = "0.1.0"
+description = "Patterns for production AI-agent workflows"
+requires-python = ">=3.11"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
